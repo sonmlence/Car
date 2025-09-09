@@ -1,13 +1,13 @@
-package com.example.car
+package com.example.car.ui.main.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import com.example.car.data.models.CarModel
 import com.example.car.databinding.ItemCarBinding
+import com.example.car.extensions.loadImg
 
-class CarAdapter(val carList: List<CarModel>) : RecyclerView.Adapter<CarAdapter.CarViewHolder>() {
+class CarAdapter(val carList: List<CarModel>, val onClick:(carModel: CarModel)-> Unit) : RecyclerView.Adapter<CarAdapter.CarViewHolder>() {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -33,14 +33,17 @@ class CarAdapter(val carList: List<CarModel>) : RecyclerView.Adapter<CarAdapter.
         return carList.size
     }
 
-    class CarViewHolder(private val binding: ItemCarBinding) :
+    inner class CarViewHolder(private val binding: ItemCarBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun onBind(carModel: CarModel){
             binding.tvCamry.text=carModel.carName
             binding.tvPrice.text=carModel.carPrice
 
             binding.imgCar.loadImg(carModel.img)
+
+            itemView.setOnClickListener {
+onClick(carModel)
+            }
         }
     }
 }
-

@@ -1,16 +1,20 @@
-package com.example.car
+package com.example.car.ui.main
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import com.example.car.data.models.CarModel
 import com.example.car.databinding.FragmentMainBinding
+import com.example.car.ui.main.adapter.CarAdapter
 
 class MainFragment : Fragment() {
 
     private lateinit var binding: FragmentMainBinding
-    private var list  = arrayListOf<CarModel>(
+
+    private val list = arrayListOf(
         CarModel(
             img = "https://media.dealeralchemist.com/jellies/Toyota/Camry/C453129_040_Side.png?auto=compress%2Cformat",
             carName = "Toyota Camry",
@@ -25,9 +29,13 @@ class MainFragment : Fragment() {
             img = "https://pngimg.com/d/mercedes_PNG1842.png",
             carName = "Mercedes",
             carPrice = "70$/day"
-        ),
+        )
     )
-    private val carAdapter: CarAdapter = CarAdapter(list)
+
+    private val carAdapter = CarAdapter(list) { carModel ->
+        val action = MainFragmentDirections.actionMainFragmentToDetailCarFragment(carModel)
+        findNavController().navigate(action)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,15 +47,6 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        loadData()
-        initView()
-    }
-
-    private fun initView() {
         binding.rvCar.adapter = carAdapter
     }
-
-    private fun loadData(){}
-
 }

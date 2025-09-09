@@ -33,15 +33,14 @@
 
 
     <ImageView
-        android:layout_marginTop="8dp"
         android:id="@+id/img_car"
-        android:layout_marginStart="20dp"
-app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_camry"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
         android:src="@drawable/ic_launcher_background"
-        />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_camry" />
 
     <ImageView
         android:id="@+id/ic_car"
