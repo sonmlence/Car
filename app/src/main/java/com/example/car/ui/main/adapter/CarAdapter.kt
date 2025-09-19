@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.car.data.models.CarModel
 import com.example.car.databinding.ItemCarBinding
-import com.example.car.extensions.loadImg
+import com.example.car.utils.loadImg
 
 class CarAdapter(val carList: List<CarModel>, val onClick:(carModel: CarModel)-> Unit) : RecyclerView.Adapter<CarAdapter.CarViewHolder>() {
 

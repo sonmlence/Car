@@ -1,4 +1,4 @@
-package com.example.car.extensions
+package com.example.car.utils
 
 import android.widget.ImageView
 import com.bumptech.glide.Glide

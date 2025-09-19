@@ -41,6 +41,7 @@ android {
     }
 }
 dependencies {
+    implementation("com.tbuonomo:dotsindicator:5.1.0")
     implementation(libs.glide)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -55,4 +56,7 @@ dependencies {
     val nav_version = "2.9.3"
     implementation("androidx.navigation:navigation-fragment:$nav_version")
     implementation("androidx.navigation:navigation-ui:$nav_version")
-}
+
+    // Lottie
+    val lottieVersion = "3.4.0"
+    implementation("com.airbnb.android:lottie:${lottieVersion}")}
