@@ -40,6 +40,6 @@ class DetailCarFragment : Fragment() {
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             findNavController().popBackStack()
+        }
     }
-}
 }
