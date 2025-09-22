@@ -40,8 +40,15 @@ class OnBoardFragment : Fragment() {
         val prefs = Prefs(requireContext())
         prefs.setOnBoardShown()
 
-        findNavController().navigate(R.id.action_onBoardFragment_to_mainFragment)
+        findNavController().navigate(
+            R.id.mainFragment,
+            null,
+            androidx.navigation.NavOptions.Builder()
+                .setPopUpTo(R.id.onBoardFragment, true)
+                .build()
+        )
     }
+
 
     private fun loadOnBoardData(): List<OnBoardModel> {
         return listOf(
