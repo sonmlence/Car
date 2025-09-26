@@ -3,34 +3,51 @@ package com.example.car.ui.main
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
 import com.example.car.R
 import com.example.car.pref.Prefs
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var pref: Prefs
+    private val auth = FirebaseAuth.getInstance()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host) as NavHostFragment
-        val navController = navHostFragment.navController
+        pref = Prefs(this)
 
-        val prefs = Prefs(this)
+        val navHost = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
+        val navController = navHost.navController
+        val navGraph = navController.navInflater.inflate(R.navigation.nav_host)
 
-        val graph = navController.navInflater.inflate(R.navigation.nav_host)
-        graph.setStartDestination(
-            if (prefs.isOnBoardShown()) R.id.mainFragment else R.id.onBoardFragment
+        val startDestination = when {
+            !pref.isOnBoardShown() -> R.id.onBoardFragment
+            pref.isUserLoggedIn() || auth.currentUser != null -> R.id.notesFragment
+            else -> R.id.authFragment
+        }
+
+        navGraph.setStartDestination(startDestination)
+        navController.graph = navGraph
+    }
+
+    fun logoutAndExit() {
+        FirebaseAuth.getInstance().signOut()
+        val gso = GoogleSignIn.getClient(
+            this,
+            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build()
         )
-        navController.graph = graph
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        gso.signOut().addOnCompleteListener {
+            pref.setUserLoggedIn(false)
+            finishAffinity()
         }
     }
 }

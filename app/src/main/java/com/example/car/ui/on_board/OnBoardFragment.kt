@@ -4,13 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.car.R
 import com.example.car.data.models.OnBoardModel
 import com.example.car.databinding.FragmentOnBoardBinding
-import com.example.car.ui.on_board.adapter.OnBoardAdapter
 import com.example.car.pref.Prefs
+import com.example.car.ui.on_board.adapter.OnBoardAdapter
 
 class OnBoardFragment : Fragment() {
 
@@ -27,27 +29,38 @@ class OnBoardFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         adapter = OnBoardAdapter(loadOnBoardData(), ::onStartBoard, ::onSkipBoard)
         binding.vpOnBoard.adapter = adapter
         binding.wormDotsIndicator.attachTo(binding.vpOnBoard)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            v.setPadding(
+                v.paddingLeft,
+                insets.getInsets(WindowInsetsCompat.Type.statusBars()).top,
+                v.paddingRight,
+                v.paddingBottom
+            )
+            insets
+        }
     }
 
     private fun onSkipBoard() {
         binding.vpOnBoard.currentItem = loadOnBoardData().size
     }
-
     private fun onStartBoard() {
         val prefs = Prefs(requireContext())
         prefs.setOnBoardShown()
 
         findNavController().navigate(
-            R.id.mainFragment,
+            R.id.authFragment,
             null,
             androidx.navigation.NavOptions.Builder()
                 .setPopUpTo(R.id.onBoardFragment, true)
                 .build()
         )
     }
+
 
 
     private fun loadOnBoardData(): List<OnBoardModel> {

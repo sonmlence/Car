@@ -31,7 +31,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_skip" />
 
-
     <ImageView
         android:id="@+id/gif_convenience"
         android:layout_width="284dp"
