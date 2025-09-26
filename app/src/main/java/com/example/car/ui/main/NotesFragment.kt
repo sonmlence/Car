@@ -56,13 +56,7 @@ class NotesFragment : Fragment() {
         btnLogout.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             prefs.setUserLoggedIn(false)
-            findNavController().navigate(
-                R.id.authFragment,
-                null,
-                androidx.navigation.NavOptions.Builder()
-                    .setPopUpTo(R.id.notesFragment, true)
-                    .build()
-            )
+            requireActivity().finishAffinity()
         }
 
         loadNotes()
