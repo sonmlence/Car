@@ -1,6 +1,5 @@
 package com.example.car.notes
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,22 +13,29 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.car.R
+import com.example.car.data.AppDatabase
 import com.example.car.data.models.Note
 import com.example.car.pref.Prefs
 import com.example.car.ui.main.NoteAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class NotesFragment : Fragment() {
 
     private lateinit var notesAdapter: NoteAdapter
     private val notesList = mutableListOf<Note>()
-    private val prefsName = "notes_prefs"
-    private val keyNotes = "notes_list"
+    private lateinit var db: AppDatabase
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,6 +46,8 @@ class NotesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        db = AppDatabase.getDatabase(requireContext())
 
         val prefs = Prefs(requireContext())
         val imgProfile = view.findViewById<ImageView>(R.id.img_profile)
@@ -59,12 +67,16 @@ class NotesFragment : Fragment() {
             requireActivity().finishAffinity()
         }
 
-        loadNotes()
-
         val rvNotes = view.findViewById<RecyclerView>(R.id.rv_notes)
-        notesAdapter = NoteAdapter(notesList) { saveNotes() }
+        notesAdapter = NoteAdapter(
+            notesList,
+            onNoteDeleted = { note -> deleteNote(note) },
+            onNotesChanged = { updateNotes() }
+        )
         rvNotes.layoutManager = LinearLayoutManager(requireContext())
         rvNotes.adapter = notesAdapter
+
+        loadNotes()
 
         val fabAdd = view.findViewById<FloatingActionButton>(R.id.btn_add)
         fabAdd.setOnClickListener {
@@ -96,9 +108,32 @@ class NotesFragment : Fragment() {
                 val title = etNoteTitle.text.toString().trim()
                 val text = etNoteText.text.toString().trim()
                 if (title.isNotEmpty() || text.isNotEmpty()) {
-                    val newNote = Note(title, text)
-                    notesAdapter.addNote(newNote)
-                    rvNotes.scrollToPosition(0)
+                    val calendar = Calendar.getInstance()
+                    android.app.DatePickerDialog(
+                        requireContext(),
+                        { _, year, month, day ->
+                            calendar.set(year, month, day)
+                            android.app.TimePickerDialog(
+                                requireContext(),
+                                { _, hour, minute ->
+                                    calendar.set(Calendar.HOUR_OF_DAY, hour)
+                                    calendar.set(Calendar.MINUTE, minute)
+                                    val formattedDate =
+                                        SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+                                            .format(calendar.time)
+                                    val newNote =
+                                        Note(title = title, text = text, date = formattedDate)
+                                    addNote(newNote, rvNotes)
+                                },
+                                calendar.get(Calendar.HOUR_OF_DAY),
+                                calendar.get(Calendar.MINUTE),
+                                true
+                            ).show()
+                        },
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)
+                    ).show()
                 }
                 dialog.dismiss()
             }
@@ -108,28 +143,44 @@ class NotesFragment : Fragment() {
             .show()
     }
 
-    private fun saveNotes() {
-        val sharedPrefs = requireContext().getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val editor = sharedPrefs.edit()
-        var savedString = ""
-        for (note in notesList) {
-            savedString += note.title + "||" + note.text + ";;"
+    private fun addNote(note: Note, rvNotes: RecyclerView) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            db.noteDao().insert(note)
+            val updatedList = db.noteDao().getAllNotes()
+            withContext(Dispatchers.Main) {
+                notesList.clear()
+                notesList.addAll(updatedList)
+                notesAdapter.notifyDataSetChanged()
+                rvNotes.scrollToPosition(0)
+            }
         }
-        editor.putString(keyNotes, savedString)
-        editor.apply()
     }
 
     private fun loadNotes() {
-        val sharedPrefs = requireContext().getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val savedString = sharedPrefs.getString(keyNotes, null)
-        if (!savedString.isNullOrEmpty()) {
-            val items = savedString.split(";;")
-            for (item in items) {
-                if (item.isEmpty()) continue
-                val parts = item.split("||")
-                if (parts.size == 2) {
-                    notesList.add(Note(parts[0], parts[1]))
-                }
+        lifecycleScope.launch(Dispatchers.IO) {
+            val loadedNotes = db.noteDao().getAllNotes()
+            withContext(Dispatchers.Main) {
+                notesList.clear()
+                notesList.addAll(loadedNotes)
+                notesAdapter.notifyDataSetChanged()
+            }
+        }
+    }
+
+    private fun deleteNote(note: Note) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            db.noteDao().delete(note)
+            updateNotes()
+        }
+    }
+
+    private fun updateNotes() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val updatedList = db.noteDao().getAllNotes()
+            withContext(Dispatchers.Main) {
+                notesList.clear()
+                notesList.addAll(updatedList)
+                notesAdapter.notifyDataSetChanged()
             }
         }
     }
