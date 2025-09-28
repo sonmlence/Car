@@ -56,7 +56,7 @@
 
     <fragment
         android:id="@+id/notesFragment"
-        android:name="com.example.car.ui.main.NotesFragment"
+        android:name="com.example.car.notes.NotesFragment"
         tools:layout="@layout/fragment_notes" />
 
 </navigation>

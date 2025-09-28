@@ -1,4 +1,4 @@
-package com.example.car.ui.main
+package com.example.car.notes
 
 import android.content.Context
 import android.os.Bundle
@@ -14,13 +14,13 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.car.R
 import com.example.car.data.models.Note
 import com.example.car.pref.Prefs
+import com.example.car.ui.main.NoteAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 
